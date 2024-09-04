@@ -1,5 +1,4 @@
 @extends('admin.master')
-
 <style>
     #video-call-container,
     #audio-call-container {
@@ -18,14 +17,12 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
-    /* Container for chat messages */
     .chat-messages {
         display: flex;
         flex-direction: column;
         gap: 10px;
     }
 
-    /* Style for sent messages */
     .message.sent {
         background-color: #F4B5BA;
         color: #333;
@@ -33,11 +30,9 @@
         border-radius: 7px;
         max-width: 75%;
         align-self: flex-end;
-        /* Align to the right */
         text-align: right;
     }
 
-    /* Style for received messages */
     .message.received {
         background-color: #E0E0E0;
         color: #333;
@@ -45,7 +40,6 @@
         border-radius: 7px;
         max-width: 75%;
         align-self: flex-start;
-        /* Align to the left */
         text-align: left;
     }
 </style>
@@ -55,7 +49,6 @@
             <h5 class="chat-with-all">Chat with all</h5>
             <div class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#creategroupModal">Create group</div>
         </div>
-
         <ul class="nav nav-underline message-tap mb-4">
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">All messages</a>
@@ -64,12 +57,10 @@
                 <a class="nav-link" href="#">Unread</a>
             </li>
         </ul>
-
         <div class="chat-box-area">
             <div class="row">
-                <!-- Chat List Column -->
                 <div class="col-md-4">
-                    <div class="chat-list border p-3" id="group-list">
+                    <div class="chat-list border p-3">
                         <div class="search-container mb-3 position-relative">
                             <input type="search" id="user-search" class="form-control search-input"
                                 placeholder="Search users">
@@ -79,43 +70,51 @@
                         <input id="userId" type="hidden" value="{{ auth()->user()->id }}">
                         <input id="userName" type="hidden" value="{{ auth()->user()->name }}">
 
-                        <!-- Dynamic User List Container -->
-                        <div id="user-list-container" class="list-group verflow-auto" style="max-height: 400px;">
+                        <div id="user-list-container" >
+
+                            <input id="userList" type="hidden" name="users" value="{{ $userList ?? '' }} ">
                             @forelse ($users as $user)
                                 <a href="{{ route('message', $user->id) }}">
                                     <li class="list-group-item d-flex align-items-center">
                                         <img src="" alt="" class="rounded-circle me-2"
                                             style="width: 40px; height: 40px;">
-                                        <label class="form-check-label" for="user_{{ $user->id }}">
-                                            <h6 class="mb-0">{{ $user->name }}</h6><span>no active</span>
-                                        </label>
+                                        <h6 class="mb-0">{{ $user->name }}</h6>&nbsp;&nbsp;&nbsp;<span>no active</span>
                                     </li>
-                                    <hr>
-
-                                @empty
-                                    <p>No Users</p>
+                                </a>
+                            @empty
+                                <p>No Users</p>
                             @endforelse
 
-                            </a>
+                            <div id="group-list">
+                                <hr>
+                                <h5>Group List</h5>
+                                <hr>
+                                @forelse ($groups as $group)
+                                <a href="{{ route('group.chat', $group->id) }}">
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <img src="" alt="" class="rounded-circle me-2"
+                                            style="width: 40px; height: 40px;">
+                                        <h6 class="mb-0">{{ $group->name }}</h6>
+                                    </li>
+                                </a>
+                            @empty
+                                <p>No Groups</p>
+                            @endforelse
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Chat Box Column -->
                 <div class="col-md-8">
                     <div class="chat-box border p-3 d-flex flex-column justify-content-between">
-
                         <div class="d-flex justify-content-start align-items-center mb-4">
                             <button id="audio-call-btn" class="btn btn-primary me-3">Audio Call</button>
                             <button id="video-call-btn" class="btn btn-info">Video Call</button>
                         </div>
-
                         <div id="audio-call-container" class="d-none">
                             <h4>Audio Call</h4>
                             <div id="audio-status" class="mb-3">Connecting...</div>
                             <button id="end-audio-call-btn" class="btn btn-danger">End Call</button>
                         </div>
-
                         <!-- Video Call UI -->
                         <div id="video-call-container" class="d-none">
                             <h4>Video Call</h4>
@@ -134,8 +133,6 @@
                                 <p>No messages yet.</p>
                             @endforelse
                         </div>
-
-
                         <form id="chat-input-form" class="chat-input-form d-flex align-items-center"
                             action="{{ route('send.message') }}" method="POST">
                             @csrf
@@ -155,107 +152,161 @@
             </div>
         </div>
     </div>
-
-    <!-- Image Upload Modal -->
-    {{-- <div class="modal fade" id="image-upload-modal" tabindex="-1" aria-labelledby="image-upload-modalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="image-upload-modalLabel">Upload Image</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="image-upload-form" action="" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-3">
-                        <input class="dropify" data-height="100" type="file" id="image" name="image"
-                            accept="image/*">
-                    </div>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
-
-                </form>
+    <div class="modal fade" id="image-upload-modal" tabindex="-1" aria-labelledby="image-upload-modalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="image-upload-modalLabel">Upload Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="image-upload-form" action="" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="mb-3">
+                            <input class="dropify" data-height="100" type="file" id="image" name="image"
+                                accept="image/*">
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- form Modal -->
-<div class="modal fade" id="creategroupModal" tabindex="-1" aria-labelledby="creategroupModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="creategroupModalLabel">Create group</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="create-group-form">
-                    @csrf
-                    <div class="mb-3">
-                        <input type="text" id="group-name" name="group_name" class="form-control"
-                            placeholder="Enter group Name" required>
-                    </div>
-                    <div class="mb-3">
-                        <input type="search" id="search-users" class="form-control" placeholder="Search users">
-                    </div>
-                    <ul class="list-group" id="user-list">
-                        @forelse ($connectedUsers as $user)
-                            <li class="list-group-item d-flex align-items-center">
-                                <input class="form-check-input me-2" type="checkbox" value="{{ $user->user->id }}"
-                                    id="user_{{ $user->user->id }}">
-                                <img src="{{ asset('/avatars/man.png') }}" alt="{{ $user->user->name }}"
-                                    class="rounded-circle me-2" style="width: 40px; height: 40px;">
-                                <label class="form-check-label" for="user_{{ $user->user->id }}">
-                                    <h6 class="mb-0">{{ $user->user->name }}</h6>
-                                </label>
-                            </li>
-                        @empty
-                            <p class="text-muted">No users found</p>
-                        @endforelse
-                    </ul>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="submit-group-button" class="btn btn-primary">Create group</button>
+    <div class="modal fade" id="creategroupModal" tabindex="-1" aria-labelledby="creategroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="creategroupModalLabel">Create group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createGroupForm">
+                        @csrf
+                        <div class="mb-3">
+                            <input type="text" id="group-name" class="form-control" placeholder="Enter group Name" required>
+                        </div>
+                        <ul class="list-group" id="user-list">
+                            @forelse ($users as $user)
+                                <li class="list-group-item d-flex align-items-center" style="cursor: pointer">
+                                    <input class="form-check-input me-2" name="users[]" type="checkbox" value="{{ $user->id }}" id="user_{{ $user->id }}">
+                                    <img src="" alt="" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                                    <h6 class="mb-0">{{ $user->name }}</h6>
+                                </li>
+                            @empty
+                                <p class="text-muted">No users found</p>
+                            @endforelse
+                        </ul>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="submit-group-button" class="btn btn-primary">Create group</button>
+                </div>
             </div>
         </div>
     </div>
-</div> --}}
-
-
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script>
-        const socket = io('http://localhost:3000');
+
+    const socket = io('http://localhost:3000');
+
+    document.getElementById('submit-group-button').addEventListener('click', function() {
+    const groupName = document.getElementById('group-name').value.trim();
+    const selectedUsers = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+    if (!groupName) {
+        alert('Please enter a group name.');
+        return;
+    }
+
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user.');
+        return;
+    }
+
+    // Send AJAX request to create the group
+    fetch('{{ route('group') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify({
+                groupName: groupName,
+                users: selectedUsers,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                // Emit socket event with group creation details
+                socket.emit('newgroup', {
+                    groupMembers: data.groupMembers,
+                    groupName: data.groupName
+                });
+
+                // Close the modal and show success message
+                $('#creategroupModal').modal('hide');
+                alert(data.status);
+
+                // Update the UI with new group information
+                updateGroupList(data.groupName, data.groupMembers);
+            } else {
+                alert('Failed to create group. Please try again.');
+            }
+        })
+        .catch(error => alert('An error occurred. Please try again.'));
+});
+
+// Function to update group list in the UI
+function updateGroupList(groupName, groupMembers) {
+    const groupList = document.getElementById('group-list');
+
+    // Create a new list item for the group
+    const groupItem = document.createElement('div');
+    groupItem.classList.add('user-list');
+
+    groupItem.innerHTML = `
+    <a href="">
+        <li class="list-group-item d-flex align-items-center">
+            <img src="" alt="" class="rounded-circle me-2"
+                style="width: 40px; height: 40px;">
+            <h6 class="mb-0">${groupName}</h6>
+        </li>
+        </a>
+
+    `;
+
+
+
+    // Append the new group to the group list
+    groupList.appendChild(groupItem);
+}
+
+// Socket.IO event for new group
+socket.on('newgroup', function(data) {
+    console.log('New group created:', data);
+    // Update the UI with the new group information
+    updateGroupList(data.groupName, data.groupMembers);
+});
+
 
         const userId = document.getElementById('userId').value
         const userName = document.getElementById('userName').value
-        // console.log(userId,userName)
+        const userList = document.getElementById('userList').value.split(',');
+        socket.emit('connected user', userId);
 
-        // let user = {
-        //     userId: userId,
-        //     userName: userName
-        // }
-        // console.log(user)
-        // socket.emit('connected user', user)
-        // socket.on('update users', (users) => {
-        //     console.log(users)
-        //     const userListContainer = document.getElementById('user-list-container')
-        //     userListContainer.innerHTML = '';
-
-        //     // Append new user list items
-        //     users.forEach(user => {
-        //         const userItem = document.createElement('div');
-        //         userItem.className = 'list-group-item';
-        //         userItem.textContent = user.userName;
-        //         userListContainer.appendChild(userItem);
-        //     });
-        // });
-
-
+        socket.on('update users', (connectedUser) => {
+            connectedUser.forEach(user => {
+                // console.log(user)
+            })
+        });
 
         document.getElementById('chat-input-form').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent the default form submission
+            e.preventDefault();
 
             const message = document.getElementById('chat-input').value;
             const receiverId = document.getElementById('receiver_id').value;
@@ -287,12 +338,10 @@
             document.getElementById('chat-messages').appendChild(messageElement);
         });
 
-
-
         // Example usage: Load chat data when a user is selected
         $(document).on('click', '.list-group-item', function() {
             const receiverId = $(this).data('receiver-id');
-            loadChatData(receiverId);
+            // loadChatData(receiverId);
         });
 
 

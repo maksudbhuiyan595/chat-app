@@ -10,9 +10,14 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
-let users = [];
+let connectedUser =[];
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
+    socket.on('connected user', (userId) => {
+            connectedUser.push(userId)
+        io.emit('update users', connectedUser);
+    });
+
 
     socket.on('audio offer', (offer) => {
         socket.broadcast.emit('audio offer', offer);
@@ -38,28 +43,27 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('video candidate', candidate);
     });
 
-    socket.on('connected user', (user) => {
-        // Check if the user with the same userId already exists
-        if (!users.some(u => u.userId === user.userId)) {
-            // Add the user to the array if it's not already there
-            users.push(user);
-        }
-
-        // Emit the updated list of users to all connected clients
-        io.emit('update users', users);
-    });
-
     socket.on('chat message', (message) => {
         console.log('Message received:', message);
         io.emit('chat message', message);
     });
 
-    ocket.on('disconnect', () => {
-        // Remove the disconnected user from the array
-        users = users.filter(u => u.userId !== socket.userId);
+    socket.on('creategroup', (data) => {
+        // Emit the newRoom event to all clients
+        io.emit('newgroup', data);
+    });
 
-        // Emit the updated list of users
-        io.emit('update users', users);
+    socket.on('joinGroup', (groupId) => {
+        socket.join(`group_${groupId}`);
+        console.log(`User joined group: group_${groupId}`);
+    });
+
+    socket.on('sendMessage', (messageData) => {
+        io.to(`group_${messageData.group_id}`).emit('receiveMessage', messageData);
+    });
+
+    socket.on('disconnect', () => {
+        io.emit('update users',connectedUser);
     });
 });
 

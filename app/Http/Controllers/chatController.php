@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
+use App\Models\GroupMember;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,7 +14,9 @@ class chatController extends Controller
     {
         $users = User::where("id" , "!=",auth()->user()->id)->get();
         $messages = Message::all();
-        return view("admin.page.chat.chat",compact("users","messages"));
+        $userList = User::all();
+        $groups = Group::all();
+        return view("admin.page.chat.chat",compact("users","messages","userList","groups"));
     }
     public function message($id)
     {
@@ -25,7 +29,8 @@ class chatController extends Controller
             $query->where('sender_id', $id)
                 ->where('receiver_id', $sender_id);
         })->orderBy('created_at', 'asc')->get();
-        return view("admin.page.chat.chat",compact("users","id","messages"));
+        $groups = Group::all();
+        return view("admin.page.chat.chat",compact("users","id","messages","groups"));
     }
 
     public function sendMessage(Request $request){
