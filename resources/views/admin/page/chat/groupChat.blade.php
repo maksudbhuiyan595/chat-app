@@ -222,7 +222,7 @@
 
     // const  = document.getElementById('receiver_id').value
     const formData = new FormData(this);
-        // console.log(formData)
+        
     $.ajax({
         url: $(this).attr('action'),
         type: 'POST',

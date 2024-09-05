@@ -61,11 +61,11 @@ class GroupController extends Controller
 
     public function sendGroupMessage(Request $request)
     {
-        // dd($request->all());
+        // c
         $message = GroupMessage::create([
-            'group_id' => 1,
-            'sender_id' => 1,
-            'message' => 'thank u',
+            'group_id' => $request->group_id,
+            'sender_id'=> $request->user_id,
+            'message'  => $request->message,
         ]);
 
 
